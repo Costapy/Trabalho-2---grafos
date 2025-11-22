@@ -17,7 +17,7 @@ def criar_grafo(vertices_nomes, arestas_dados, direcionado=False):
 
     return g, mapeamento_vertices
 
-def dijkstra(g, vertice_inicial):
+def dijkstra_estendido(g, vertice_inicial):
     distancias = {v: float('inf') for v in g.vertices()}
     predecessores = {v: None for v in g.vertices()}
     distancias[vertice_inicial] = 0
