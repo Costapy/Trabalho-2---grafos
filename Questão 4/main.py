@@ -57,66 +57,66 @@ def criar_grafo_labirinto(n):
 # --- 2. Função de Visualização ---
 def desenhar_grafo(grafo_obj, caminho, algoritmo_nome, dimensao):
     """
-    Plota o grafo usando NetworkX.
+    Versão Corrigida: Desenha o caminho explicitamente sobrepondo as arestas.
     """
     G_nx = nx.DiGraph()
     pos = {}
     
-    # Construir grafo NetworkX e posições
+    # 1. Construir grafo NetworkX e posições
     for v in grafo_obj.vertices():
         nome = v.element()
         G_nx.add_node(nome)
         try:
             r, c = map(int, nome.split(','))
-            # (coluna, -linha) para ficar estilo matriz visualmente
             pos[nome] = (c, -r) 
         except:
             pos[nome] = (0,0)
 
-    edge_colors = []
-    edge_widths = []
-    
-    # Mapear arestas para verificar se pertencem ao caminho
-    caminho_arestas = set()
-    if caminho and len(caminho) > 1:
-        for i in range(len(caminho)-1):
-            caminho_arestas.add((caminho[i], caminho[i+1]))
-
+    # Adiciona todas as arestas ao objeto NetworkX
     for e in grafo_obj.edges():
         u = e.endpoints()[0].element()
         v = e.endpoints()[1].element()
         G_nx.add_edge(u, v)
-        
-        if (u, v) in caminho_arestas:
-            edge_colors.append('red')
-            edge_widths.append(2.5)
-        else:
-            edge_colors.append('lightgray')
-            edge_widths.append(0.5)
 
-    # Configuração visual baseada no tamanho
+    # Configuração visual
     plt.figure(figsize=(10, 8))
     node_size = 600 if dimensao <= 10 else 100
-    font_size = 8 if dimensao <= 10 else 0 # Esconde texto em grafos grandes
+    font_size = 8 if dimensao <= 10 else 0
     
-    # Desenhar
+    # 2. Desenhar TODO o grafo em cinza (Fundo)
     nx.draw_networkx_nodes(G_nx, pos, node_size=node_size, node_color='lightblue')
-    nx.draw_networkx_edges(G_nx, pos, edge_color=edge_colors, width=edge_widths, arrows=True, arrowsize=10)
+    # Desenha as arestas cinzas mais finas
+    nx.draw_networkx_edges(G_nx, pos, edge_color='lightgray', width=1.0, arrows=True, arrowsize=10)
     
     if font_size > 0:
         nx.draw_networkx_labels(G_nx, pos, font_size=font_size)
 
-    # Destacar Caminho (Nós)
-    if caminho:
+    # 3. Desenhar APENAS o Caminho (Sobreposição)
+    if caminho and len(caminho) > 1:
+        # Pinta os nós do caminho de laranja
         nx.draw_networkx_nodes(G_nx, pos, nodelist=caminho, node_color='orange', node_size=node_size)
-        nx.draw_networkx_nodes(G_nx, pos, nodelist=[caminho[0]], node_color='green', node_size=node_size+50) # Início
-        nx.draw_networkx_nodes(G_nx, pos, nodelist=[caminho[-1]], node_color='red', node_size=node_size+50)   # Fim
+        
+        # Pinta Início (Verde) e Fim (Vermelho)
+        nx.draw_networkx_nodes(G_nx, pos, nodelist=[caminho[0]], node_color='green', node_size=node_size+50)
+        nx.draw_networkx_nodes(G_nx, pos, nodelist=[caminho[-1]], node_color='red', node_size=node_size+50)
+        
+        # A MÁGICA: Cria uma lista de arestas exata baseada no caminho e desenha por cima
+        # Ex: [('0,0', '0,1'), ('0,1', '0,2')...]
+        arestas_caminho = list(zip(caminho, caminho[1:]))
+        
+        nx.draw_networkx_edges(
+            G_nx, 
+            pos, 
+            edgelist=arestas_caminho, 
+            edge_color='red', 
+            width=3.0,  # Mais grossa para destacar
+            arrows=True
+        )
 
-    plt.title(f"{algoritmo_nome} - Grid {dimensao}x{dimensao} - Custo Visualizado")
+    plt.title(f"{algoritmo_nome} - Grid {dimensao}x{dimensao} - Caminho Visualizado")
     plt.axis('off')
     
-    # Pausa para visualizar sem travar o loop (ou block=False)
-    print(f"  -> Exibindo gráfico para {algoritmo_nome} ({dimensao}x{dimensao}). Feche a janela para continuar.")
+    print(f"  -> Exibindo gráfico para {algoritmo_nome} ({dimensao}x{dimensao}).")
     plt.show()
 
 # --- 3. Execução Principal ---
